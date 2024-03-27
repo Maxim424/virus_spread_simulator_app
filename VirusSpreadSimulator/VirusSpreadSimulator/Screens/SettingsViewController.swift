@@ -27,7 +27,7 @@ class SettingsViewController: UITableViewController {
     
     let updateIntervalTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "от 1 до 20"
+        textField.placeholder = "больше 0.0 и меньше 20.0"
         textField.keyboardType = .decimalPad
         textField.clearButtonMode = .whileEditing
         return textField
