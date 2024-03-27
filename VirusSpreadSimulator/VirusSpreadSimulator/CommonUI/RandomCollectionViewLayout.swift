@@ -7,7 +7,11 @@ import UIKit
 
 class RandomCollectionViewLayout: UICollectionViewLayout {
     
+    // MARK: - Properties.
+    
     var people: [Person]
+    
+    // MARK: - Initialization.
     
     init(people: [Person]) {
         self.people = people
@@ -26,9 +30,7 @@ class RandomCollectionViewLayout: UICollectionViewLayout {
             return
         }
         guard let collectionView = collectionView else { return }
-        
         cellAttributes.removeAll()
-        
         let cellCount = collectionView.numberOfItems(inSection: 0)
         
         for item in 0..<cellCount {
@@ -54,5 +56,5 @@ class RandomCollectionViewLayout: UICollectionViewLayout {
     override var collectionViewContentSize: CGSize {
         return collectionView?.bounds.size ?? CGSize.zero
     }
+    
 }
-

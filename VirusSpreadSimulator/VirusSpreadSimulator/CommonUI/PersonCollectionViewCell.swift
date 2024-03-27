@@ -7,7 +7,7 @@ import UIKit
 
 class PersonCollectionViewCell: UICollectionViewCell {
     
-    // MARK: - Properties
+    // MARK: - Properties.
     
     static let reuseIdentifier = "PersonCell"
     
@@ -18,7 +18,7 @@ class PersonCollectionViewCell: UICollectionViewCell {
         return view
     }()
     
-    // MARK: - Initialization
+    // MARK: - Initialization.
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -30,24 +30,23 @@ class PersonCollectionViewCell: UICollectionViewCell {
         setupViews()
     }
     
-    // MARK: - Setup
+    // MARK: - Setup UI.
     
     private func setupViews() {
         contentView.addSubview(personView)
         personView.pin(to: contentView)
     }
     
-    // MARK: - Configuration
+    // MARK: - Configuration.
     
     func configure(with person: Person) {
         personView.backgroundColor = (person.status == .healthy) ? .green : .red
     }
-    
-    // MARK: - Cell Highlighting
     
     override var isHighlighted: Bool {
         didSet {
             personView.alpha = isHighlighted ? 0.5 : 1.0
         }
     }
+    
 }

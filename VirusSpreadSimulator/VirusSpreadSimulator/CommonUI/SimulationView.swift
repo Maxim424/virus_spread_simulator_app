@@ -7,7 +7,7 @@ import UIKit
 
 class SimulationView: UICollectionView {
     
-    // MARK: - Properties
+    // MARK: - Properties.
     
     var people: [Person] = [] {
         didSet {
@@ -15,7 +15,7 @@ class SimulationView: UICollectionView {
         }
     }
     
-    // MARK: - Initialization
+    // MARK: - Initialization.
     
     override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
         let flowLayout = UICollectionViewFlowLayout()

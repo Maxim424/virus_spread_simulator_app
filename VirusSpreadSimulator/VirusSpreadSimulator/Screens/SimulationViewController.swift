@@ -201,7 +201,6 @@ extension SimulationViewController: UICollectionViewDelegate {
     }
     
     func collectionViewDidEndMultipleSelectionInteraction(_ collectionView: UICollectionView) {
-        print("ended")
         scrollView.isScrollEnabled = true
     }
     
@@ -214,9 +213,11 @@ extension SimulationViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PersonCell", for: indexPath) as! PersonCollectionViewCell
-        cell.configure(with: people[indexPath.item])
-        return cell
+        if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PersonCell", for: indexPath) as? PersonCollectionViewCell {
+            cell.configure(with: people[indexPath.item])
+            return cell
+        }
+        return UICollectionViewCell()
     }
     
 }
@@ -228,5 +229,3 @@ extension SimulationViewController: UIScrollViewDelegate {
     }
     
 }
-
-
