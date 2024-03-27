@@ -106,7 +106,6 @@ class SettingsViewController: UITableViewController {
         cell.contentView.addSubview(textField)
         cell.selectionStyle = .none
         textField.pin(to: cell.contentView, [.left: 16, .top: 10, .right: 16, .bottom: 10])
-        textField.keyboardType = .numberPad
     }
     
     func showAlert(title: String, message: String) {
@@ -133,9 +132,9 @@ class SettingsViewController: UITableViewController {
             return false
         }
         guard let updateIntervalString = updateIntervalTextField.text,
-            let updateInterval = Int(updateIntervalString),
-              updateInterval > 0 && updateInterval < 21 else {
-            showAlert(title: "Ошибка", message: "Фактор заражения должен быть в пределах от 1 до 20.")
+            let updateInterval = TimeInterval(updateIntervalString),
+              updateInterval > 0.0 && updateInterval < 20.0 else {
+            showAlert(title: "Ошибка", message: "Интервал обновления должен быть больше 0 и меньше 20.")
             return false
         }
         return true

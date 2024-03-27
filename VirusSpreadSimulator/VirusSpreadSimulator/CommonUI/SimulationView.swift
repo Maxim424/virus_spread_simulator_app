@@ -51,4 +51,5 @@ class SimulationView: UICollectionView {
             collectionViewLayout.layoutAttributesForItem(at: indexPath)
         }
     }
+    
 }
