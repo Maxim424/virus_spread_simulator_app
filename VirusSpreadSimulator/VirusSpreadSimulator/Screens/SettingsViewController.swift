@@ -6,6 +6,8 @@
 import UIKit
 
 class SettingsViewController: UITableViewController {
+    
+    // MARK: - UI components.
 
     let groupSizeTextField: UITextField = {
         let textField = UITextField()
@@ -30,6 +32,8 @@ class SettingsViewController: UITableViewController {
         textField.clearButtonMode = .whileEditing
         return textField
     }()
+    
+    // MARK: - Lifecycle functions.
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,6 +50,8 @@ class SettingsViewController: UITableViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationController?.navigationItem.largeTitleDisplayMode = .always
     }
+    
+    // MARK: - Setup UI.
     
     func setupNavBar() {
         title = "Параметры"
@@ -108,6 +114,8 @@ class SettingsViewController: UITableViewController {
         textField.pin(to: cell.contentView, [.left: 16, .top: 10, .right: 16, .bottom: 10])
     }
     
+    // MARK: - Business logic.
+    
     func showAlert(title: String, message: String) {
         let alert = UIAlertController(
             title: title,
@@ -139,5 +147,5 @@ class SettingsViewController: UITableViewController {
         }
         return true
     }
+    
 }
-
