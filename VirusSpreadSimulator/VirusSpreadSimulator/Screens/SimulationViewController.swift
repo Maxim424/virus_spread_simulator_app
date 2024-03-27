@@ -9,14 +9,15 @@ class SimulationViewController: UIViewController {
     
     // MARK: - Properties.
     
-    var healthyCount: Int = 0
-    var infectedCount: Int = 0
     var groupSize: Int = 100
     var infectionFactor: Int = 3
     var updateInterval: TimeInterval = 1
     var timer: Timer?
     var people: [Person] = []
-    let peopleAccessQueue = DispatchQueue(label: "peopleAccess", attributes: .concurrent)
+    let simulationQueue = DispatchQueue(label: "simulation", qos: .userInitiated, attributes: .concurrent)
+    let statisticsQueue = DispatchQueue(label: "statistics", qos: .userInitiated)
+    let peopleAccessQueue = DispatchQueue(label: "peopleAccess", qos: .userInitiated, attributes: .concurrent)
+    let semaphore = DispatchSemaphore(value: 1)
     
     // MARK: - UI components.
     
@@ -69,6 +70,8 @@ class SimulationViewController: UIViewController {
         simulationView.heightAnchor.constraint(equalToConstant: simulationViewHeight).isActive = true
         simulationView.dataSource = self
         simulationView.delegate = self
+        simulationView.allowsMultipleSelectionDuringEditing = true
+        simulationView.isEditing = true
     }
     
     func setupNavBar() {
@@ -92,8 +95,6 @@ class SimulationViewController: UIViewController {
     // MARK: - Business logic.
     
     func initializeSimulation() {
-        healthyCount = groupSize
-        infectedCount = 0
         people = createPeople()
         simulationView.people = people
         simulationView.collectionViewLayout = RandomCollectionViewLayout(people: people)
@@ -119,27 +120,23 @@ class SimulationViewController: UIViewController {
     
     @objc
     func updateSimulation() {
-        let concurrentQueue = DispatchQueue(label: "simulation", attributes: .concurrent)
         let group = DispatchGroup()
-        let semaphore = DispatchSemaphore(value: 1)
-        peopleAccessQueue.async(flags: .barrier) {
-            for i in 0..<self.people.count {
-                if self.people[i].status == .infected && self.people[i].canInfect {
-                    concurrentQueue.async(group: group) {
-                        semaphore.wait()
-                        let neighbors = self.findNeighbors(personIndex: i)
-                        self.infectNeighbors(neighbors: neighbors)
-                        semaphore.signal()
+        peopleAccessQueue.async(flags: .barrier) { [weak self] in
+            for i in 0..<(self?.people.count ?? 0) {
+                if self?.people[i].status == .infected && (self?.people[i].canInfect ?? false) {
+                    self?.simulationQueue.async(group: group) {
+                        DispatchQueue.main.async {
+                            self?.semaphore.wait()
+                            let neighbors = self?.findNeighbors(personIndex: i)
+                            self?.infectNeighbors(neighbors: neighbors ?? [])
+                            self?.semaphore.signal()
+                        }
                     }
                 }
             }
         }
-        
-        group.notify(queue: .main) {
-            self.updateLabels()
-        }
+        updateStatistics()
     }
-
     
     func findNeighbors(personIndex: Int) -> [Int] {
         var neighbors: [Int] = []
@@ -156,28 +153,25 @@ class SimulationViewController: UIViewController {
     }
     
     func infectNeighbors(neighbors: [Int]) {
-        peopleAccessQueue.async(flags: .barrier) {
+        peopleAccessQueue.async(flags: .barrier) { [weak self] in
             for index in neighbors {
-                if self.people[index].status == .healthy {
-                    self.people[index].status = .infected
+                if self?.people[index].status == .healthy {
+                    self?.people[index].status = .infected
                 }
             }
             let indexPaths = neighbors.map { IndexPath(item: $0, section: 0) }
-            DispatchQueue.main.async { self.simulationView.reloadItems(at: indexPaths) }
+            DispatchQueue.main.async { self?.simulationView.reloadItems(at: indexPaths) }
         }
     }
     
-    func calculateStatistics() {
-        healthyCount = people.filter { $0.status == .healthy }.count
-        infectedCount = people.filter { $0.status == .infected }.count
-    }
-    
-    func updateLabels() {
-        calculateStatistics()
-        toolbarItems?[0].title = "Здоровые: \(healthyCount)"
-        toolbarItems?[2].title = "Зараженные: \(infectedCount)"
-        if healthyCount == 0 {
-            print(people)
+    func updateStatistics() {
+        statisticsQueue.async { [weak self] in
+            let healthyCount = self?.people.filter { $0.status == .healthy }.count
+            let infectedCount = self?.people.filter { $0.status == .infected }.count
+            DispatchQueue.main.async {
+                self?.toolbarItems?[0].title = "Здоровые: \(healthyCount ?? 0)"
+                self?.toolbarItems?[2].title = "Зараженные: \(infectedCount ?? 0)"
+            }
         }
     }
     
@@ -185,7 +179,7 @@ class SimulationViewController: UIViewController {
     func refreshPage() {
         timer?.invalidate()
         initializeSimulation()
-        updateLabels()
+        updateStatistics()
     }
     
 }
@@ -195,6 +189,20 @@ extension SimulationViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         people[indexPath.item].status = .infected
         simulationView.reloadItems(at: [indexPath])
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, shouldBeginMultipleSelectionInteractionAt indexPath: IndexPath) -> Bool {
+        true
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didBeginMultipleSelectionInteractionAt indexPath: IndexPath) {
+        setEditing(true, animated: true)
+        scrollView.isScrollEnabled = false
+    }
+    
+    func collectionViewDidEndMultipleSelectionInteraction(_ collectionView: UICollectionView) {
+        print("ended")
+        scrollView.isScrollEnabled = true
     }
     
 }
